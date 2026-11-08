@@ -1,0 +1,1504 @@
+<!DOCTYPE html>
+<html lang="id" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <meta name="theme-color" content="#064e3b" />
+  <title>PalmSOS (SawitAman) – Sistem Pelaporan K3 Perusahaan Kelapa Sawit</title>
+  
+  <!-- PWA & Mobile Web App Meta Tags -->
+  <link rel="manifest" href="manifest.json" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="PalmSOS" />
+  <link rel="apple-touch-icon" href="icon-192.svg" />
+  <link rel="icon" type="image/svg+xml" href="icon-192.svg" />
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            palm: {
+              50: '#ecfdf5',
+              100: '#d1fae5',
+              200: '#a7f3d0',
+              300: '#6ee7b7',
+              400: '#34d399',
+              50: '#10b981',
+              600: '#059669',
+              700: '#047857',
+              800: '#065f46',
+              900: '#064e3b',
+              950: '#022c22',
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Google Fonts: Plus Jakarta Sans -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&display=swap" rel="stylesheet">
+  
+  <!-- Chart.js for Agribusiness K3 Analytics -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <!-- Custom CSS -->
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body class="selection:bg-emerald-600 selection:text-white">
+
+  <!-- ========================================================================= -->
+  <!-- DESKTOP SIMULATOR CONTROLS BAR (Tampil hanya di layar Laptop/Desktop)     -->
+  <!-- ========================================================================= -->
+  <div id="desktop-simulator-bar" class="w-full max-w-6xl mx-auto my-2 px-4 py-2.5 bg-slate-900/95 backdrop-blur-md rounded-2xl border border-slate-700 shadow-2xl flex items-center justify-between text-xs text-slate-200">
+    <div class="flex items-center gap-2">
+      <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
+      <span class="font-extrabold text-white tracking-wide">PalmSOS • Sistem Pelaporan K3 Perkebunan Kelapa Sawit</span>
+      <span class="hidden md:inline text-slate-400">| PT Sawit Makmur Lestari</span>
+    </div>
+
+    <div class="flex items-center gap-2">
+      <!-- Toggle Mobile Frame vs Fullscreen Desktop -->
+      <button onclick="toggleDeviceViewMode()" id="btn-toggle-viewmode" class="px-3 py-1.5 bg-emerald-700 hover:bg-emerald-600 text-white font-bold rounded-lg transition-all flex items-center gap-1.5 shadow-sm">
+        <span id="viewmode-icon">📱</span>
+        <span id="viewmode-text">Mode Smartphone</span>
+      </button>
+
+      <!-- Publishing Guide & QR Code Button -->
+      <button onclick="openModal('modal-publish')" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-amber-300 font-bold rounded-lg border border-slate-600 transition-all flex items-center gap-1.5">
+        <span>🚀</span>
+        <span>Panduan Publish</span>
+      </button>
+
+      <!-- PWA Install Guide -->
+      <button onclick="openModal('modal-install')" class="hidden sm:flex px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-emerald-300 font-bold rounded-lg border border-slate-600 transition-all items-center gap-1.5">
+        <span>📲</span>
+        <span>Pasang di HP</span>
+      </button>
+    </div>
+  </div>
+
+
+  <!-- ========================================================================= -->
+  <!-- MAIN APP CONTAINER (PHONE VIEWPORT OR FULLSCREEN)                         -->
+  <!-- ========================================================================= -->
+  <div id="app-viewport-wrapper">
+    
+    <!-- Simulated Phone Status Bar with Dynamic Island (Hanya di Laptop) -->
+    <div class="phone-mockup-header">
+      <span id="mockup-clock" class="font-mono text-emerald-200">09:41</span>
+      
+      <!-- Dynamic Island / Camera Notch -->
+      <div class="dynamic-island">
+        <div class="dynamic-island-cam"></div>
+        <div class="dynamic-island-sensor"></div>
+      </div>
+
+      <div class="flex items-center gap-1.5 text-[10px] text-emerald-200">
+        <span class="font-bold">5G</span>
+        <span>📶</span>
+        <span>100%</span>
+        <span>🔋</span>
+      </div>
+    </div>
+
+    <!-- Internal Scrollable App Container -->
+    <div id="app-scroll-container">
+
+      <!-- PWA Install Prompt Banner -->
+      <div id="pwa-install-banner" class="hidden bg-gradient-to-r from-emerald-950 to-green-950 text-white px-4 py-2.5 border-b border-emerald-600 flex items-center justify-between text-xs animate-fadeIn">
+        <div class="flex items-center gap-2">
+          <span class="text-lg">📲</span>
+          <div>
+            <div class="font-bold leading-tight">Pasang PalmSOS di HP</div>
+            <div class="text-[10px] text-emerald-200 leading-tight">Akses cepat & dapat dipakai tanpa sinyal (Offline)</div>
+          </div>
+        </div>
+        <div class="flex items-center gap-1.5">
+          <button onclick="triggerPWAInstall()" class="px-2.5 py-1 bg-amber-500 hover:bg-amber-400 text-slate-950 font-extrabold rounded-lg text-[11px] transition-colors">
+            Pasang
+          </button>
+          <button onclick="dismissPWABanner()" class="text-slate-400 hover:text-white px-1 font-bold">✕</button>
+        </div>
+      </div>
+
+      <!-- ===================================================================== -->
+      <!-- VIEW 0: 🔐 HALAMAN LOGIN KARYAWAN & PETUGAS K3 (BAGIAN AWAL)          -->
+      <!-- ===================================================================== -->
+      <main id="view-login" class="flex-grow p-4 sm:p-6 flex flex-col justify-center max-w-lg mx-auto w-full my-auto animate-fadeIn">
+        
+        <!-- Login Card -->
+        <div class="bg-white rounded-3xl shadow-2xl border-2 border-emerald-800/20 overflow-hidden">
+          
+          <!-- Brand Header Banner -->
+          <div class="brand-gradient text-white p-6 text-center space-y-2 relative overflow-hidden">
+            <div class="w-16 h-16 mx-auto rounded-2xl bg-white/10 backdrop-blur-md border border-white/25 flex items-center justify-center text-3xl shadow-lg ring-2 ring-emerald-400/40">
+              🌴
+            </div>
+            <div>
+              <div class="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-emerald-950/80 border border-emerald-500 text-emerald-200 text-[11px] font-bold uppercase tracking-wider">
+                PT Sawit Makmur Lestari
+              </div>
+              <h1 class="text-2xl font-black tracking-tight mt-1">Palm<span class="text-amber-400">SOS</span> (SawitAman)</h1>
+              <p class="text-xs text-emerald-100 font-medium">Sistem Digital Pelaporan & Monitoring K3 Perkebunan Kelapa Sawit</p>
+            </div>
+            <div class="p-2 bg-black/25 rounded-xl border border-white/10 text-[11px] text-amber-300 font-bold">
+              📢 Slogan: "Lihat Bahaya, Jepret, Laporkan!"
+            </div>
+          </div>
+
+          <!-- Login Form Content -->
+          <div class="p-6 space-y-5 bg-slate-50/50">
+            
+            <!-- Role Selection Tabs -->
+            <div class="space-y-1.5">
+              <label class="block text-xs font-black text-slate-900 uppercase tracking-wide">
+                1. Pilih Peran / Role Masuk:
+              </label>
+              <div class="grid grid-cols-2 gap-2">
+                <button type="button" onclick="setLoginRole('employee')" id="login-role-emp" class="p-3 rounded-xl border-2 border-emerald-700 bg-emerald-50 text-emerald-950 font-black text-xs flex flex-col items-center gap-1 transition-all shadow-sm">
+                  <span class="text-xl">👷</span>
+                  <span>Karyawan Lapangan</span>
+                  <span class="text-[10px] text-emerald-700 font-semibold">(Pemanen / Operator)</span>
+                </button>
+                <button type="button" onclick="setLoginRole('officer')" id="login-role-off" class="p-3 rounded-xl border-2 border-slate-300 bg-white text-slate-700 font-bold text-xs flex flex-col items-center gap-1 transition-all hover:border-slate-400">
+                  <span class="text-xl">👨‍💼</span>
+                  <span>Petugas K3 / HSE</span>
+                  <span class="text-[10px] text-slate-500 font-normal">(Verifikasi & Audit)</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Login Credentials Form -->
+            <form onsubmit="handleLoginSubmit(event)" class="space-y-3.5">
+              
+              <!-- NIK / ID Karyawan -->
+              <div class="space-y-1">
+                <label for="login-nik" class="block text-xs font-black text-slate-900">
+                  ID Karyawan / NIK <span class="text-red-600">*</span>
+                </label>
+                <input type="text" id="login-nik" required placeholder="Contoh: KRY-7721" class="w-full px-3.5 py-2.5 rounded-xl text-xs sm:text-sm font-bold border-2 border-slate-300 focus:border-emerald-600" value="KRY-7721" />
+              </div>
+
+              <!-- Nama Lengkap -->
+              <div class="space-y-1">
+                <label for="login-name" class="block text-xs font-black text-slate-900">
+                  Nama Lengkap <span class="text-red-600">*</span>
+                </label>
+                <input type="text" id="login-name" required placeholder="Contoh: Andi Saputra" class="w-full px-3.5 py-2.5 rounded-xl text-xs sm:text-sm font-bold border-2 border-slate-300 focus:border-emerald-600" value="Andi Saputra" />
+              </div>
+
+              <!-- Afdeling / Unit -->
+              <div class="space-y-1">
+                <label for="login-afdeling" class="block text-xs font-black text-slate-900">
+                  Unit Kerja / Afdeling <span class="text-red-600">*</span>
+                </label>
+                <select id="login-afdeling" class="w-full px-3.5 py-2.5 rounded-xl text-xs sm:text-sm font-bold border-2 border-slate-300 focus:border-emerald-600">
+                  <option value="Divisi 3 / Afdeling II">Afdeling II - Divisi 3 (Kebun TM)</option>
+                  <option value="Afdeling I">Afdeling I (Jalur Panen)</option>
+                  <option value="Afdeling III">Afdeling III (Area TBM)</option>
+                  <option value="Afdeling IV">Afdeling IV (Gawangan Utama)</option>
+                  <option value="Pabrik Kelapa Sawit (PKS)">Pabrik Kelapa Sawit (PKS)</option>
+                  <option value="Divisi HSE & K3 Perkebunan & PKS">Divisi K3 & Lingkungan (HSE)</option>
+                  <option value="Sentral Workshop">Bengkel & Workshop Traktor</option>
+                </select>
+              </div>
+
+              <!-- PIN / Password -->
+              <div class="space-y-1">
+                <div class="flex items-center justify-between">
+                  <label for="login-pin" class="block text-xs font-black text-slate-900">
+                    PIN Keamanan / Sandi <span class="text-red-600">*</span>
+                  </label>
+                  <span class="text-[10px] text-emerald-800 font-bold bg-emerald-100 px-2 py-0.5 rounded">Default Demo: 1234</span>
+                </div>
+                <input type="password" id="login-pin" required placeholder="Ketik 1234" value="1234" class="w-full px-3.5 py-2.5 rounded-xl text-xs sm:text-sm font-bold border-2 border-slate-300 focus:border-emerald-600 font-mono tracking-widest" />
+              </div>
+
+              <!-- Submit Login Button -->
+              <div class="pt-2">
+                <button type="submit" id="btn-login-submit" class="w-full py-3.5 px-4 bg-gradient-to-r from-emerald-800 via-emerald-700 to-green-700 hover:from-emerald-900 hover:to-green-800 text-white font-black text-sm rounded-xl shadow-lg shadow-emerald-900/30 flex items-center justify-center gap-2 transition-all transform active:scale-95">
+                  <span>🔐</span>
+                  <span>MASUK KE SISTEM PALMSOS</span>
+                </button>
+              </div>
+
+            </form>
+
+            <!-- 1-Click Fast Demo Login Selector (Untuk Demo Dosen) -->
+            <div class="pt-3 border-t-2 border-slate-200 space-y-2">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-black text-slate-900">⚡ 1-Klik Masuk Akun Demo (Siap Pakai):</span>
+                <span class="text-[10px] text-slate-500">Klik langsung masuk</span>
+              </div>
+
+              <div class="grid grid-cols-2 gap-2 text-left">
+                <!-- User 1 -->
+                <button type="button" onclick="quickLoginUser(0)" class="p-2.5 bg-white hover:bg-emerald-50 border-2 border-slate-200 hover:border-emerald-600 rounded-xl transition-all flex items-center gap-2 group">
+                  <span class="text-lg">👷</span>
+                  <div class="text-[11px] leading-tight">
+                    <div class="font-extrabold text-slate-900 group-hover:text-emerald-900">Andi Saputra</div>
+                    <div class="text-[9px] text-slate-500">Pemanen Divisi 3</div>
+                  </div>
+                </button>
+
+                <!-- User 2 -->
+                <button type="button" onclick="quickLoginUser(1)" class="p-2.5 bg-white hover:bg-amber-50 border-2 border-slate-200 hover:border-amber-600 rounded-xl transition-all flex items-center gap-2 group">
+                  <span class="text-lg">🚜</span>
+                  <div class="text-[11px] leading-tight">
+                    <div class="font-extrabold text-slate-900 group-hover:text-amber-900">Bambang Irawan</div>
+                    <div class="text-[9px] text-slate-500">Operator PKS</div>
+                  </div>
+                </button>
+
+                <!-- User 3 -->
+                <button type="button" onclick="quickLoginUser(2)" class="p-2.5 bg-white hover:bg-blue-50 border-2 border-slate-200 hover:border-blue-600 rounded-xl transition-all flex items-center gap-2 group">
+                  <span class="text-lg">👨‍💼</span>
+                  <div class="text-[11px] leading-tight">
+                    <div class="font-extrabold text-slate-900 group-hover:text-blue-900">Hendra Wijaya</div>
+                    <div class="text-[9px] text-blue-700 font-bold">HSE Officer K3</div>
+                  </div>
+                </button>
+
+                <!-- User 4 -->
+                <button type="button" onclick="quickLoginUser(3)" class="p-2.5 bg-white hover:bg-purple-50 border-2 border-slate-200 hover:border-purple-600 rounded-xl transition-all flex items-center gap-2 group">
+                  <span class="text-lg">📋</span>
+                  <div class="text-[11px] leading-tight">
+                    <div class="font-extrabold text-slate-900 group-hover:text-purple-900">Dedi Kurniawan</div>
+                    <div class="text-[9px] text-slate-500">Mandor Afdeling I</div>
+                  </div>
+                </button>
+              </div>
+            </div>
+
+            <!-- Direct Guest Exploration Button (Zero Friction untuk Presentasi / Review) -->
+            <div class="pt-3 border-t-2 border-slate-200 space-y-1.5">
+              <div class="text-[11px] font-black text-slate-700 text-center">Atau langsung uji coba sistem tanpa isi form:</div>
+              <div class="grid grid-cols-2 gap-2">
+                <button type="button" onclick="directGuestLogin('employee')" class="p-3 bg-gradient-to-r from-emerald-700 to-green-700 hover:from-emerald-800 hover:to-green-800 text-white rounded-xl font-black text-xs shadow-md flex items-center justify-center gap-1.5 transition-all transform active:scale-95">
+                  <span class="text-base">👷</span>
+                  <span>Mulai: Karyawan</span>
+                </button>
+                <button type="button" onclick="directGuestLogin('officer')" class="p-3 bg-gradient-to-r from-blue-700 to-slate-800 hover:from-blue-800 hover:to-slate-900 text-white rounded-xl font-black text-xs shadow-md flex items-center justify-center gap-1.5 transition-all transform active:scale-95">
+                  <span class="text-base">👨‍💼</span>
+                  <span>Mulai: Petugas K3</span>
+                </button>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Login Footer Info -->
+          <div class="p-3 bg-slate-100 border-t border-slate-200 text-center text-[10px] text-slate-600">
+            Tugas Kuliah Agribisnis • Sistem Informasi Keselamatan Kerja Kelapa Sawit (K3)
+          </div>
+
+        </div>
+
+      </main>
+
+
+      <!-- ===================================================================== -->
+      <!-- APP HEADER & NAVIGATION (Shown when user is logged in)                -->
+      <!-- ===================================================================== -->
+      <header id="app-main-header" class="hidden sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b-2 border-slate-300 shadow-sm flex-shrink-0">
+        <div class="max-w-7xl mx-auto px-4 py-2.5 sm:py-3">
+          <div class="flex items-center justify-between gap-2">
+            
+            <!-- Brand / Logo -->
+            <div class="flex items-center gap-2.5 cursor-pointer" onclick="switchView('employee')">
+              <div class="w-9 h-9 sm:w-11 sm:h-11 rounded-xl bg-gradient-to-br from-emerald-800 to-green-950 text-white flex items-center justify-center shadow-md font-black text-lg sm:text-xl ring-2 ring-emerald-500/40">
+                🌴
+              </div>
+              <div>
+                <div class="flex items-center gap-1.5">
+                  <span class="font-black text-base sm:text-lg tracking-tight text-emerald-950">Palm<span class="text-amber-500">SOS</span></span>
+                  <span class="px-1.5 py-0.2 text-[9px] font-extrabold bg-emerald-100 text-emerald-900 rounded-full border border-emerald-300">K3 Sawit</span>
+                </div>
+                <p class="text-[10px] text-slate-600 font-bold hidden sm:block">PT Sawit Makmur Lestari</p>
+              </div>
+            </div>
+
+            <!-- Role Selector Tabs (Desktop / Tablet) -->
+            <nav class="hidden md:flex items-center bg-slate-200 p-1 rounded-xl border border-slate-300" id="role-nav">
+              <button id="nav-employee" onclick="switchView('employee')" class="tab-btn active px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1">
+                <span>👷</span>
+                <span>Karyawan</span>
+              </button>
+              <button id="nav-officer" onclick="switchView('officer')" class="tab-btn px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1 text-slate-700 hover:text-emerald-950">
+                <span>👨‍💼</span>
+                <span>Petugas K3</span>
+                <span id="pending-badge" class="ml-1 px-1.5 py-0.2 text-[10px] bg-amber-500 text-white rounded-full font-bold">2</span>
+              </button>
+            </nav>
+
+            <!-- Right Utilities: User Profile, SOS & Logout -->
+            <div class="flex items-center gap-1.5 sm:gap-2">
+              
+              <!-- User Profile Switcher -->
+              <button onclick="openModal('modal-user')" class="flex items-center gap-1.5 px-2.5 py-1.5 bg-emerald-50 hover:bg-emerald-100 border-2 border-emerald-300 rounded-xl transition-all" title="Klik untuk ganti akun">
+                <span class="w-6 h-6 rounded-full bg-emerald-800 text-white text-[11px] flex items-center justify-center font-black" id="current-user-initial">A</span>
+                <div class="text-left hidden lg:block">
+                  <div class="text-[11px] font-black leading-tight text-slate-900" id="current-user-name">Andi Saputra</div>
+                  <div class="text-[9px] text-emerald-800 font-semibold leading-tight" id="current-user-role">Pemanen Divisi 3</div>
+                </div>
+                <span class="text-[9px] text-slate-500">▼</span>
+              </button>
+
+              <!-- SOS Hotline Button -->
+              <button onclick="openModal('modal-sos')" class="px-2.5 py-1.5 bg-red-600 hover:bg-red-700 text-white rounded-xl text-xs font-black transition-all shadow-md shadow-red-600/30 flex items-center gap-1 animate-pulse" title="Panggilan Darurat">
+                <span>🚨</span>
+                <span class="hidden sm:inline">SOS</span>
+              </button>
+
+              <!-- Logout Button -->
+              <button onclick="handleLogout()" class="px-2.5 py-1.5 bg-slate-200 hover:bg-red-100 text-slate-700 hover:text-red-700 border border-slate-300 rounded-xl text-xs font-bold flex items-center gap-1 transition-colors" title="Keluar Akun">
+                <span>🚪</span>
+                <span class="hidden sm:inline">Keluar</span>
+              </button>
+
+            </div>
+
+          </div>
+        </div>
+      </header>
+
+      <!-- ===================================================================== -->
+      <!-- VIEW 1: 👷 HALAMAN KARYAWAN LAPANGAN (FORMULIR K3 BERWARNA & TEGAS)   -->
+      <!-- ===================================================================== -->
+      <main id="view-employee" class="flex-grow pb-24 hidden">
+        
+        <!-- Hero Banner Section -->
+        <section class="hero-pattern text-white py-6 sm:py-8 border-b-2 border-emerald-900 relative overflow-hidden">
+          <div class="px-4 sm:px-6 relative z-10 max-w-5xl mx-auto">
+            <div class="space-y-1.5">
+              <div class="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-emerald-950 border border-emerald-400 text-emerald-300 text-xs font-extrabold">
+                <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
+                <span>Selamat Datang, <span id="hero-welcome-name">Andi Saputra</span></span>
+              </div>
+              <h1 class="text-xl sm:text-3xl font-black tracking-tight leading-snug">
+                Lihat Bahaya? <span class="text-amber-400 underline decoration-amber-500/60">Jangan Diam!</span>
+              </h1>
+              <p class="text-emerald-100 text-xs sm:text-sm font-semibold leading-relaxed">
+                Slogan: <strong class="text-amber-300">"Lihat Bahaya, Jepret, Laporkan!"</strong>. Laporkan setiap potensi bahaya di blok kebun atau PKS agar segera diperbaiki oleh tim K3.
+              </p>
+            </div>
+
+            <!-- Quick Action Buttons Strip -->
+            <div class="grid grid-cols-2 gap-2.5 mt-4">
+              <button onclick="triggerNativeCamera()" class="p-3 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-slate-950 font-black rounded-xl shadow-lg text-xs flex items-center justify-center gap-2 transition-all transform active:scale-95">
+                <span class="text-xl">📸</span>
+                <span>JEPRET SEKARANG</span>
+              </button>
+              <a href="#form-section" class="p-3 bg-white/20 hover:bg-white/30 border border-white/30 text-white font-extrabold rounded-xl text-xs flex items-center justify-center gap-2 transition-all">
+                <span class="text-xl">📝</span>
+                <span>FORMULIR K3</span>
+              </a>
+            </div>
+          </div>
+        </section>
+
+        <!-- Main Form & Content -->
+        <div class="px-4 sm:px-6 -mt-3 relative z-20 space-y-6 max-w-5xl mx-auto">
+          
+          <!-- FORMULIR PELAPORAN BAHAYA -->
+          <section id="form-section" class="bg-white rounded-3xl shadow-xl border-2 border-slate-300 overflow-hidden">
+            
+            <!-- Form Header -->
+            <div class="brand-gradient px-4 py-3.5 sm:px-6 sm:py-4 text-white flex items-center justify-between border-b-2 border-emerald-950">
+              <div class="flex items-center gap-2.5">
+                <span class="p-2 bg-white/15 rounded-xl text-lg">📝</span>
+                <div>
+                  <h2 class="text-sm sm:text-base font-black">Formulir Pelaporan Bahaya K3</h2>
+                  <p class="text-[11px] text-emerald-100 font-medium">Laporan akan langsung diterima dan ditindaklanjuti Petugas HSE</p>
+                </div>
+              </div>
+              <button type="button" onclick="resetReportForm()" class="text-xs bg-white/20 hover:bg-white/30 text-white font-bold px-3 py-1.5 rounded-lg border border-white/30 transition-colors">
+                🔄 Reset Form
+              </button>
+            </div>
+
+            <!-- STEPPER PROGRESS WIZARD (STRUKTUR STEP-BY-STEP) -->
+            <div class="px-4 pt-3 pb-1 border-b border-slate-200 bg-slate-50/70 overflow-x-auto">
+              <div class="flex items-center justify-between text-xs font-bold text-slate-700 mb-1.5 px-1">
+                <span class="font-black text-slate-900">Alur Pelaporan Bahaya K3:</span>
+                <span class="text-emerald-800 font-extrabold text-[11px]" id="stepper-progress-text">Langkah 1 dari 5</span>
+              </div>
+              <div class="stepper-nav" id="form-stepper">
+                <button type="button" class="stepper-step active" id="step-nav-1" onclick="jumpToFormStep(1)">
+                  <span class="stepper-badge">1</span>
+                  <span>📸 Foto Bukti</span>
+                </button>
+                <button type="button" class="stepper-step" id="step-nav-2" onclick="jumpToFormStep(2)">
+                  <span class="stepper-badge">2</span>
+                  <span>🏷️ Kategori</span>
+                </button>
+                <button type="button" class="stepper-step" id="step-nav-3" onclick="jumpToFormStep(3)">
+                  <span class="stepper-badge">3</span>
+                  <span>📍 Lokasi & GPS</span>
+                </button>
+                <button type="button" class="stepper-step" id="step-nav-4" onclick="jumpToFormStep(4)">
+                  <span class="stepper-badge">4</span>
+                  <span>⚠️ Tingkat Risiko</span>
+                </button>
+                <button type="button" class="stepper-step" id="step-nav-5" onclick="jumpToFormStep(5)">
+                  <span class="stepper-badge">5</span>
+                  <span>📝 Rincian Bahaya</span>
+                </button>
+              </div>
+            </div>
+
+            <form id="hazard-report-form" onsubmit="handleFormSubmit(event)" class="p-4 sm:p-6 space-y-6">
+
+              <!-- ============================================================= -->
+              <!-- 1. FOTO BUKTI TEMUAN BAHAYA (DENGAN INSTRUKSI JELAS)         -->
+              <!-- ============================================================= -->
+              <div id="step-section-1" class="space-y-2.5">
+                <div class="flex items-center justify-between">
+                  <label class="block text-xs sm:text-sm font-black text-slate-900">
+                    <span class="px-2 py-0.5 rounded bg-emerald-800 text-white mr-1">LANGKAH 1</span>
+                    Foto Bukti Temuan Bahaya <span class="text-red-600">*</span>
+                  </label>
+                  <span class="text-[10px] font-bold text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded border border-emerald-300">Wajib Dilampirkan</span>
+                </div>
+
+                <!-- Callout Instruction Box (High Contrast) -->
+                <div class="instruction-box-green p-3 rounded-xl text-xs space-y-1">
+                  <div class="font-extrabold flex items-center gap-1.5">
+                    <span>💡</span> INSTRUKSI PENGAMBILAN FOTO:
+                  </div>
+                  <p class="text-[11px] leading-relaxed">
+                    Tekan <strong>"Kamera HP"</strong> untuk memotret langsung kondisi bahaya di lapangan dengan kamera HP Anda, atau tekan <strong>"Upload File"</strong> untuk memilih gambar dari galeri/memori. Jika untuk demonstrasi tugas kuliah, tekan <strong>"Contoh Kasus"</strong>.
+                  </p>
+                </div>
+
+                <!-- Hidden Inputs for Native Camera & Gallery File -->
+                <input type="file" id="input-camera-native" accept="image/*" capture="environment" class="hidden" onchange="handleNativeCameraCapture(event)" />
+                <input type="file" id="input-file-photo" accept="image/*" class="hidden" onchange="handleFileUpload(event)" />
+
+                <!-- Action Buttons Grid (High Contrast Colored Buttons) -->
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+                  
+                  <!-- Button 1: Native Mobile Camera -->
+                  <button type="button" onclick="triggerNativeCamera()" class="p-3.5 rounded-2xl bg-emerald-800 hover:bg-emerald-900 text-white flex flex-col items-center justify-center gap-1 transition-all shadow-md active:scale-95 group">
+                    <span class="text-2xl group-hover:scale-110 transition-transform">📸</span>
+                    <span class="text-xs font-black">Kamera HP</span>
+                    <span class="text-[10px] text-emerald-200 font-bold">Jepret Langsung</span>
+                  </button>
+
+                  <!-- Button 2: File Gallery Upload -->
+                  <button type="button" onclick="triggerGalleryUpload()" class="p-3.5 rounded-2xl bg-slate-800 hover:bg-slate-900 text-white flex flex-col items-center justify-center gap-1 transition-all shadow-md active:scale-95 group">
+                    <span class="text-2xl group-hover:scale-110 transition-transform">🖼️</span>
+                    <span class="text-xs font-black">Upload File</span>
+                    <span class="text-[10px] text-slate-300 font-bold">Pilih dari Galeri</span>
+                  </button>
+
+                  <!-- Button 3: Preset Hazard Examples -->
+                  <button type="button" onclick="openModal('modal-presets')" class="p-3.5 rounded-2xl bg-amber-500 hover:bg-amber-600 text-slate-950 flex flex-col items-center justify-center gap-1 transition-all shadow-md active:scale-95 group">
+                    <span class="text-2xl group-hover:scale-110 transition-transform">⚡</span>
+                    <span class="text-xs font-black">Contoh Kasus</span>
+                    <span class="text-[10px] text-slate-900 font-bold">Demo 1-Klik</span>
+                  </button>
+
+                  <!-- Button 4: Live WebRTC Viewfinder Modal -->
+                  <button type="button" onclick="openCameraModal()" class="p-3.5 rounded-2xl bg-blue-700 hover:bg-blue-800 text-white flex flex-col items-center justify-center gap-1 transition-all shadow-md active:scale-95 group">
+                    <span class="text-2xl group-hover:scale-110 transition-transform">🎥</span>
+                    <span class="text-xs font-black">Kamera Live</span>
+                    <span class="text-[10px] text-blue-200 font-bold">Scanner View</span>
+                  </button>
+
+                </div>
+
+                <!-- Photo Preview Area (High Contrast) -->
+                <div id="photo-preview-container" class="hidden mt-2 p-3.5 rounded-2xl bg-slate-900 text-white border-2 border-slate-700 shadow-inner">
+                  <div class="flex flex-col sm:flex-row items-center gap-3">
+                    <div class="w-full sm:w-44 h-36 rounded-xl overflow-hidden bg-black flex-shrink-0 relative border-2 border-emerald-500">
+                      <img id="photo-preview-img" src="" alt="Bukti Foto Bahaya" class="w-full h-full object-cover" />
+                      <span class="absolute bottom-1 right-1 text-[10px] bg-emerald-600 text-white font-mono font-black px-2 py-0.5 rounded shadow">TERPASANG ✓</span>
+                    </div>
+                    <div class="flex-grow space-y-1.5 text-center sm:text-left w-full">
+                      <div class="flex items-center justify-between">
+                        <span class="text-xs font-black text-emerald-400 flex items-center gap-1">
+                          <span>✓</span> Foto Bukti Berhasil Dimuat
+                        </span>
+                        <button type="button" onclick="removePhotoPreview()" class="text-xs text-red-400 hover:text-red-300 underline font-bold">
+                          ✕ Hapus Foto
+                        </button>
+                      </div>
+                      <p id="photo-preview-caption" class="text-xs text-slate-200 font-semibold line-clamp-2">
+                        Dokumentasi kondisi fisik bahaya di kebun kelapa sawit.
+                      </p>
+                      <div id="photo-size-badge" class="inline-block px-2.5 py-1 bg-slate-800 rounded-lg text-[10px] text-emerald-300 font-mono font-bold border border-slate-700">
+                        Ukuran: Terkompresi Otomatis
+                      </div>
+                      <div class="flex gap-2 justify-center sm:justify-start pt-1">
+                        <button type="button" onclick="triggerNativeCamera()" class="px-3 py-1 bg-emerald-700 hover:bg-emerald-600 text-white rounded-lg text-xs font-bold">
+                          🔄 Foto Ulang
+                        </button>
+                        <button type="button" onclick="triggerGalleryUpload()" class="px-3 py-1 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-lg text-xs font-bold border border-slate-600">
+                          🖼️ Ganti File
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <input type="hidden" id="report-photo-data" value="" required />
+              </div>
+
+              <!-- ============================================================= -->
+              <!-- 2. JENIS / KATEGORI TEMUAN BAHAYA                            -->
+              <!-- ============================================================= -->
+              <div id="step-section-2" class="space-y-2">
+                <label for="report-category" class="block text-xs sm:text-sm font-black text-slate-900">
+                  <span class="px-2 py-0.5 rounded bg-blue-800 text-white mr-1">LANGKAH 2</span>
+                  Jenis Temuan Bahaya K3 <span class="text-red-600">*</span>
+                </label>
+                <div class="instruction-box-blue p-2.5 rounded-xl text-xs font-medium">
+                  💡 <strong>Instruksi:</strong> Tentukan kategori temuan (contoh: <em>Unsafe Condition</em> untuk pohon tumbang/jalan rusak, <em>Unsafe Action</em> untuk tidak pakai APD, <em>Near Miss</em> untuk hampir tertimpa buah).
+                </div>
+                <select id="report-category" required onchange="markStepCompleted(2); updateStepperActive(3);" class="w-full px-3.5 py-3 bg-white border-2 border-slate-300 rounded-xl text-xs sm:text-sm focus:border-emerald-600 focus:ring-2 focus:ring-emerald-200 text-slate-950 font-bold">
+                  <option value="" disabled selected>-- Pilih Kategori Temuan K3 --</option>
+                </select>
+              </div>
+
+              <!-- ============================================================= -->
+              <!-- 3. LOKASI KEJADIAN & KOORDINAT GPS                           -->
+              <!-- ============================================================= -->
+              <div id="step-section-3" class="space-y-2">
+                <div class="flex items-center justify-between">
+                  <label for="report-location" class="block text-xs sm:text-sm font-black text-slate-900">
+                    <span class="px-2 py-0.5 rounded bg-amber-800 text-white mr-1">LANGKAH 3</span>
+                    Lokasi Temuan Blok / Stasiun PKS <span class="text-red-600">*</span>
+                  </label>
+                  <button type="button" onclick="detectGPSLocation()" class="text-xs font-extrabold text-emerald-950 flex items-center gap-1.5 bg-emerald-200 hover:bg-emerald-300 px-3 py-1.5 rounded-xl border border-emerald-400 shadow-sm transition-colors">
+                    <span id="gps-icon">📍</span>
+                    <span id="gps-text">Ambil GPS HP</span>
+                  </button>
+                </div>
+
+                <div class="instruction-box-amber p-2.5 rounded-xl text-xs font-medium">
+                  💡 <strong>Instruksi:</strong> Pilih nama blok/afdeling tempat bahaya ditemukan. Klik tombol <strong>"Ambil GPS HP"</strong> agar koordinat satelit kebun tersimpan otomatis.
+                </div>
+
+                <select id="report-location" required onchange="markStepCompleted(3); updateStepperActive(4);" class="w-full px-3.5 py-3 bg-white border-2 border-slate-300 rounded-xl text-xs sm:text-sm focus:border-emerald-600 focus:ring-2 focus:ring-emerald-200 text-slate-950 font-bold">
+                  <option value="" disabled selected>-- Pilih Blok / Lokasi Kebun --</option>
+                </select>
+
+                <!-- GPS Info Display -->
+                <div id="gps-result-box" class="hidden p-2.5 bg-emerald-100 rounded-xl border-2 border-emerald-400 text-xs text-emerald-950 flex items-center justify-between font-bold">
+                  <div class="flex items-center gap-2">
+                    <span class="w-2.5 h-2.5 rounded-full bg-emerald-600 animate-pulse"></span>
+                    <span class="font-mono text-xs" id="gps-coordinates-text">Koordinat: -</span>
+                  </div>
+                  <button type="button" onclick="clearGPS()" class="text-xs text-slate-500 hover:text-slate-800 font-black px-1.5">✕ Hapus</button>
+                </div>
+                <input type="hidden" id="report-gps-val" value="" />
+              </div>
+
+              <!-- ============================================================= -->
+              <!-- 4. TINGKAT RISIKO BAHAYA                                     -->
+              <!-- ============================================================= -->
+              <div id="step-section-4" class="space-y-2">
+                <label class="block text-xs sm:text-sm font-black text-slate-900">
+                  <span class="px-2 py-0.5 rounded bg-purple-800 text-white mr-1">LANGKAH 4</span>
+                  Tingkat Risiko Bahaya <span class="text-red-600">*</span>
+                </label>
+                <div class="grid grid-cols-3 gap-2.5">
+                  <!-- Rendah -->
+                  <div>
+                    <input type="radio" name="risk-level" id="risk-low" value="Rendah" onchange="markStepCompleted(4); updateStepperActive(5);" class="hidden risk-radio risk-radio-low" />
+                    <label for="risk-low" class="flex flex-col items-center justify-center p-3 rounded-2xl border-2 border-slate-300 bg-white hover:bg-slate-50 cursor-pointer transition-all text-center">
+                      <span class="text-xl">🟢</span>
+                      <span class="text-xs font-black text-slate-900 mt-1">Rendah</span>
+                      <span class="text-[9px] text-slate-500 font-semibold">Dampak minor</span>
+                    </label>
+                  </div>
+
+                  <!-- Sedang -->
+                  <div>
+                    <input type="radio" name="risk-level" id="risk-medium" value="Sedang" onchange="markStepCompleted(4); updateStepperActive(5);" class="hidden risk-radio risk-radio-medium" checked />
+                    <label for="risk-medium" class="flex flex-col items-center justify-center p-3 rounded-2xl border-2 border-slate-300 bg-white hover:bg-slate-50 cursor-pointer transition-all text-center">
+                      <span class="text-xl">🟡</span>
+                      <span class="text-xs font-black text-slate-900 mt-1">Sedang</span>
+                      <span class="text-[9px] text-slate-500 font-semibold">Luka ringan/alat</span>
+                    </label>
+                  </div>
+
+                  <!-- Tinggi -->
+                  <div>
+                    <input type="radio" name="risk-level" id="risk-high" value="Tinggi" onchange="markStepCompleted(4); updateStepperActive(5);" class="hidden risk-radio risk-radio-high" />
+                    <label for="risk-high" class="flex flex-col items-center justify-center p-3 rounded-2xl border-2 border-slate-300 bg-white hover:bg-slate-50 cursor-pointer transition-all text-center">
+                      <span class="text-xl">🔴</span>
+                      <span class="text-xs font-black text-slate-900 mt-1">Tinggi</span>
+                      <span class="text-[9px] text-slate-500 font-semibold">Ancaman fatal</span>
+                    </label>
+                  </div>
+                </div>
+              </div>
+
+              <!-- ============================================================= -->
+              <!-- 5. KETERANGAN & DESKRIPSI BAHAYA                             -->
+              <!-- ============================================================= -->
+              <div id="step-section-5" class="space-y-2">
+                <div class="flex items-center justify-between">
+                  <label for="report-description" class="block text-xs sm:text-sm font-black text-slate-900">
+                    <span class="px-2 py-0.5 rounded bg-slate-800 text-white mr-1">LANGKAH 5</span>
+                    Keterangan & Rincian Bahaya <span class="text-red-600">*</span>
+                  </label>
+                  <span class="text-xs font-black text-emerald-900 bg-emerald-100 px-2 py-0.5 rounded" id="char-count">0/500</span>
+                </div>
+                <textarea id="report-description" rows="3" required maxlength="500" placeholder="Jelaskan kondisi bahaya secara jelas (contoh: Pohon sawit tua tumbang melintang di jalan angkut TBS Blok B12, menghalangi traktor dan berisiko menimpa pekerja)..." class="w-full px-3.5 py-2.5 bg-white border-2 border-slate-300 rounded-xl text-xs sm:text-sm font-bold text-slate-950 focus:border-emerald-600 focus:ring-2 focus:ring-emerald-200 transition-all resize-y" oninput="updateCharCount(this); if(this.value.trim().length >= 5) markStepCompleted(5);"></textarea>
+              </div>
+
+              <!-- 6. IDENTITAS PELAPOR & WAKTU (OTOMATIS) -->
+              <div class="p-3.5 bg-slate-100 rounded-2xl border-2 border-slate-300 text-xs text-slate-800 space-y-1.5 font-bold">
+                <div class="flex items-center justify-between">
+                  <span class="text-slate-600 font-normal">Nama Pelapor:</span>
+                  <span class="text-emerald-950 font-black" id="form-reporter-name">Andi Saputra (Pemanen)</span>
+                </div>
+                <div class="flex items-center justify-between">
+                  <span class="text-slate-600 font-normal">Waktu Pelaporan:</span>
+                  <span class="font-mono font-black text-slate-900" id="form-realtime-clock">-</span>
+                </div>
+              </div>
+
+              <!-- SUBMIT BUTTON -->
+              <div class="pt-2">
+                <button type="submit" id="btn-submit-report" class="w-full py-4 px-6 bg-gradient-to-r from-red-600 via-emerald-800 to-green-800 hover:from-red-700 hover:to-green-900 text-white font-black rounded-2xl shadow-xl transition-all transform active:scale-95 text-sm sm:text-base flex items-center justify-center gap-2">
+                  <span class="text-xl">🚨</span>
+                  <span>KIRIM LAPORAN KE BAGIAN K3 SEKARANG</span>
+                </button>
+                <p class="text-center text-[11px] text-slate-600 font-bold mt-2">
+                  ✓ Laporan langsung tercatat di sistem K3 untuk diverifikasi & diperbaiki tim HSE.
+                </p>
+              </div>
+
+            </form>
+          </section>
+
+          <!-- RIWAYAT LAPORAN SAYA (TRACKER) -->
+          <section id="section-my-reports" class="space-y-3.5 pt-2">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <span class="text-xl">📋</span>
+                <h2 class="text-sm sm:text-base font-black text-slate-900">Riwayat Laporan Temuan</h2>
+                <span id="my-reports-count" class="px-2.5 py-0.5 text-xs font-extrabold bg-emerald-200 text-emerald-950 rounded-full border border-emerald-400">0 Laporan</span>
+              </div>
+              <select id="filter-my-reports" onchange="renderMyReports()" class="text-xs font-bold bg-white border-2 border-slate-300 rounded-xl px-2.5 py-1.5 text-slate-900">
+                <option value="all">Semua Status</option>
+                <option value="Menunggu Verifikasi">Menunggu Verifikasi</option>
+                <option value="Sedang Ditindaklanjuti">Sedang Ditindaklanjuti</option>
+                <option value="Selesai">Selesai</option>
+              </select>
+            </div>
+
+            <!-- Cards List Container -->
+            <div id="my-reports-grid" class="grid grid-cols-1 md:grid-cols-2 gap-3.5">
+              <!-- Populated dynamically via app.js -->
+            </div>
+          </section>
+
+          <!-- PANDUAN RINGKAS K3 SAWIT -->
+          <section class="bg-gradient-to-br from-emerald-900 to-green-950 rounded-3xl p-5 text-white space-y-3 shadow-lg border border-emerald-700">
+            <div class="flex items-center justify-between">
+              <h3 class="text-xs sm:text-sm font-black flex items-center gap-1.5 text-emerald-300">
+                <span>🛡️</span> 5 Golden Rules Keselamatan Kebun Sawit
+              </h3>
+              <button onclick="openModal('modal-sop')" class="text-xs text-amber-300 font-extrabold underline">
+                Modul Teori K3 ➔
+              </button>
+            </div>
+            <div class="grid grid-cols-3 gap-2 text-xs font-bold">
+              <div class="bg-white/10 p-2.5 rounded-xl text-center border border-white/10">🦺 1. APD Lengkap</div>
+              <div class="bg-white/10 p-2.5 rounded-xl text-center border border-white/10">🔪 2. Sarung Egrek</div>
+              <div class="bg-white/10 p-2.5 rounded-xl text-center border border-white/10">🚜 3. Angkut TBS</div>
+            </div>
+          </section>
+
+        </div>
+      </main>
+
+
+      <!-- ===================================================================== -->
+      <!-- VIEW 2: 👨‍💼 DASHBOARD PETUGAS K3 (HSE DASHBOARD & ANALYTICS)         -->
+      <!-- ===================================================================== -->
+      <main id="view-officer" class="flex-grow pb-24 hidden">
+        
+        <!-- Dashboard Header -->
+        <section class="bg-slate-900 text-white py-6 sm:py-8 border-b-2 border-slate-800">
+          <div class="max-w-7xl mx-auto px-4 sm:px-6">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div>
+                <div class="flex items-center gap-2">
+                  <span class="px-2 py-0.5 text-[10px] font-black bg-amber-500 text-slate-950 rounded uppercase">HSE Management System</span>
+                  <span class="text-xs text-slate-400 font-semibold">PT Sawit Makmur Lestari</span>
+                </div>
+                <h1 class="text-lg sm:text-2xl font-black mt-1">Dashboard Monitoring & Verifikasi K3</h1>
+                <p class="text-xs text-slate-300 font-medium">Verifikasi laporan bahaya lapangan, alur tindakan perbaikan, dan analisis risiko.</p>
+              </div>
+
+              <!-- Quick Action Controls -->
+              <div class="flex flex-wrap items-center gap-2">
+                <button onclick="exportToCSV()" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-white border border-slate-600 rounded-xl text-xs font-bold flex items-center gap-1.5">
+                  <span>📥</span> CSV
+                </button>
+                <button onclick="printK3Summary()" class="px-3 py-1.5 bg-emerald-800 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-sm">
+                  <span>🖨️</span> Cetak Rekap
+                </button>
+                <button onclick="resetToInitialData()" title="Kembalikan data ke contoh awal untuk demo" class="px-3 py-1.5 bg-slate-800 hover:bg-amber-900/60 text-amber-300 border border-slate-600 rounded-xl text-xs font-bold flex items-center gap-1.5">
+                  <span>🔄</span> Reset Demo
+                </button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 -mt-3 space-y-5">
+          
+          <!-- STATISTIK METRIK K3 (CARDS GRID) -->
+          <section class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+            
+            <!-- Total Laporan -->
+            <div class="bg-white p-3.5 rounded-2xl border-2 border-slate-300 shadow-sm space-y-0.5">
+              <div class="text-xs font-bold text-slate-600 flex items-center justify-between">
+                <span>Total Laporan</span>
+                <span>📊</span>
+              </div>
+              <div class="text-2xl font-black text-slate-900" id="stat-total">0</div>
+              <div class="text-[10px] text-emerald-800 font-bold">Akumulasi Semua Data</div>
+            </div>
+
+            <!-- Near Miss -->
+            <div class="bg-white p-3.5 rounded-2xl border-2 border-orange-300 bg-orange-50/40 shadow-sm space-y-0.5">
+              <div class="text-xs font-bold text-orange-800 flex items-center justify-between">
+                <span>Near Miss</span>
+                <span>⚡</span>
+              </div>
+              <div class="text-2xl font-black text-orange-600" id="stat-nearmiss">0</div>
+              <div class="text-[10px] text-slate-600 font-semibold">Hampir Celaka</div>
+            </div>
+
+            <!-- Unsafe Condition -->
+            <div class="bg-white p-3.5 rounded-2xl border-2 border-amber-300 bg-amber-50/40 shadow-sm space-y-0.5">
+              <div class="text-xs font-bold text-amber-800 flex items-center justify-between">
+                <span>Kondisi Bahaya</span>
+                <span>⚠️</span>
+              </div>
+              <div class="text-2xl font-black text-amber-600" id="stat-unsafe-cond">0</div>
+              <div class="text-[10px] text-slate-600 font-semibold">Unsafe Condition</div>
+            </div>
+
+            <!-- Menunggu Verifikasi -->
+            <div class="bg-white p-3.5 rounded-2xl border-2 border-amber-400 bg-amber-100/60 shadow-sm space-y-0.5">
+              <div class="text-xs font-bold text-amber-900 flex items-center justify-between">
+                <span>Menunggu</span>
+                <span class="status-dot dot-pending"></span>
+              </div>
+              <div class="text-2xl font-black text-amber-800" id="stat-pending">0</div>
+              <div class="text-[10px] text-amber-950 font-extrabold">Perlu Tindakan HSE</div>
+            </div>
+
+            <!-- Sedang Ditindaklanjuti -->
+            <div class="bg-white p-3.5 rounded-2xl border-2 border-blue-400 bg-blue-100/60 shadow-sm space-y-0.5">
+              <div class="text-xs font-bold text-blue-900 flex items-center justify-between">
+                <span>Diproses</span>
+                <span class="status-dot dot-progress"></span>
+              </div>
+              <div class="text-2xl font-black text-blue-800" id="stat-progress">0</div>
+              <div class="text-[10px] text-blue-950 font-extrabold">Sedang Diperbaiki</div>
+            </div>
+
+            <!-- Selesai -->
+            <div class="bg-white p-3.5 rounded-2xl border-2 border-emerald-400 bg-emerald-100/60 shadow-sm space-y-0.5">
+              <div class="text-xs font-bold text-emerald-900 flex items-center justify-between">
+                <span>Selesai</span>
+                <span class="status-dot dot-done"></span>
+              </div>
+              <div class="text-2xl font-black text-emerald-800" id="stat-completed">0</div>
+              <div class="text-[10px] text-emerald-950 font-extrabold" id="stat-completion-rate">0% Selesai</div>
+            </div>
+
+          </section>
+
+          <!-- GRAFIK ANALISIS K3 -->
+          <section class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+            
+            <!-- Chart 1: Doughnut -->
+            <div class="bg-white p-4 sm:p-5 rounded-3xl border-2 border-slate-300 shadow-sm space-y-2">
+              <div class="flex items-center justify-between">
+                <h3 class="text-xs sm:text-sm font-black text-slate-900 flex items-center gap-1.5">
+                  <span>🍩</span> Rasio Kategori Bahaya K3
+                </h3>
+                <span class="text-[10px] font-bold text-slate-500">Distribusi</span>
+              </div>
+              <div class="h-48 relative flex items-center justify-center">
+                <canvas id="chart-categories"></canvas>
+              </div>
+            </div>
+
+            <!-- Chart 2: Bar Chart -->
+            <div class="bg-white p-4 sm:p-5 rounded-3xl border-2 border-slate-300 shadow-sm space-y-2 lg:col-span-2">
+              <div class="flex items-center justify-between">
+                <h3 class="text-xs sm:text-sm font-black text-slate-900 flex items-center gap-1.5">
+                  <span>📊</span> Matriks Risiko vs Status Penanganan K3
+                </h3>
+                <span class="text-[10px] font-bold text-slate-500">Kebun & PKS</span>
+              </div>
+              <div class="h-48 relative">
+                <canvas id="chart-risk-status"></canvas>
+              </div>
+            </div>
+
+          </section>
+
+          <!-- TABEL MASTER SEMUA LAPORAN K3 -->
+          <section class="bg-white rounded-3xl border-2 border-slate-300 shadow-sm overflow-hidden p-4 sm:p-5 space-y-3.5">
+            
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+              <div>
+                <h3 class="text-sm sm:text-base font-black text-slate-900 flex items-center gap-2">
+                  <span>🚨</span> Master Data Laporan K3 Lapangan
+                </h3>
+                <p class="text-xs text-slate-600 font-semibold">Klik tombol "Detail" untuk verifikasi status & isi tindakan perbaikan</p>
+              </div>
+
+              <!-- Search & Filter Bar -->
+              <div class="flex flex-wrap items-center gap-2">
+                <input type="text" id="officer-search" placeholder="Cari ID/pelapor/lokasi..." oninput="filterOfficerReports()" class="text-xs px-3 py-2 bg-slate-50 border-2 border-slate-300 rounded-xl focus:border-emerald-600 w-40 sm:w-48 font-bold" />
+
+                <select id="officer-filter-status" onchange="filterOfficerReports()" class="text-xs font-bold bg-slate-50 border-2 border-slate-300 rounded-xl px-2.5 py-2">
+                  <option value="all">Semua Status</option>
+                  <option value="Menunggu Verifikasi">Menunggu Verifikasi</option>
+                  <option value="Sedang Ditindaklanjuti">Sedang Ditindaklanjuti</option>
+                  <option value="Selesai">Selesai</option>
+                </select>
+
+                <select id="officer-filter-risk" onchange="filterOfficerReports()" class="text-xs font-bold bg-slate-50 border-2 border-slate-300 rounded-xl px-2.5 py-2">
+                  <option value="all">Semua Risiko</option>
+                  <option value="Tinggi">Tinggi</option>
+                  <option value="Sedang">Sedang</option>
+                  <option value="Rendah">Rendah</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Table Container -->
+            <div class="overflow-x-auto border-2 border-slate-200 rounded-2xl">
+              <table class="w-full text-left text-xs">
+                <thead class="bg-slate-100 text-slate-800 font-black uppercase tracking-wider border-b-2 border-slate-300 text-[11px]">
+                  <tr>
+                    <th class="py-2.5 px-3">Foto</th>
+                    <th class="py-2.5 px-3">No. Laporan</th>
+                    <th class="py-2.5 px-3">Pelapor</th>
+                    <th class="py-2.5 px-3">Kategori</th>
+                    <th class="py-2.5 px-3">Lokasi Blok</th>
+                    <th class="py-2.5 px-3">Risiko</th>
+                    <th class="py-2.5 px-3">Status</th>
+                    <th class="py-2.5 px-3">Waktu</th>
+                    <th class="py-2.5 px-3 text-right">Aksi</th>
+                  </tr>
+                </thead>
+                <tbody id="officer-table-body" class="divide-y divide-slate-200 font-semibold">
+                  <!-- Rendered dynamically in app.js -->
+                </tbody>
+              </table>
+            </div>
+
+            <!-- Table Footer -->
+            <div class="flex items-center justify-between text-xs text-slate-600 pt-1 font-bold">
+              <div id="officer-table-count">Menampilkan 0 laporan</div>
+              <span class="text-emerald-800 font-extrabold">Tersinkronisasi Otomatis ✓</span>
+            </div>
+
+          </section>
+
+        </div>
+      </main>
+
+      <!-- ===================================================================== -->
+      <!-- MOBILE BOTTOM NAVIGATION DOCK (Shown when user is logged in)          -->
+      <!-- ===================================================================== -->
+      <nav class="bottom-dock hidden" id="mobile-bottom-dock">
+        
+        <!-- Tab 1: Lapor / Form -->
+        <button onclick="navDockTo('form')" id="dock-btn-form" class="bottom-dock-btn active">
+          <span class="dock-icon">📝</span>
+          <span>Lapor</span>
+        </button>
+
+        <!-- Tab 2: Riwayat -->
+        <button onclick="navDockTo('history')" id="dock-btn-history" class="bottom-dock-btn">
+          <span class="dock-icon">📋</span>
+          <span>Riwayat</span>
+        </button>
+
+        <!-- Tab 3: K3 Officer Dashboard -->
+        <button onclick="navDockTo('officer')" id="dock-btn-officer" class="bottom-dock-btn">
+          <span class="dock-icon">👨‍💼</span>
+          <span>Petugas K3</span>
+        </button>
+
+        <!-- Tab 4: SOS Darurat -->
+        <button onclick="openModal('modal-sos')" class="bottom-dock-btn text-red-600">
+          <span class="dock-icon animate-pulse">🚨</span>
+          <span class="text-red-700 font-black">SOS 24h</span>
+        </button>
+
+        <!-- Tab 5: Panduan / SOP -->
+        <button onclick="openModal('modal-sop')" class="bottom-dock-btn">
+          <span class="dock-icon">📘</span>
+          <span>Panduan</span>
+        </button>
+
+      </nav>
+
+    </div><!-- End #app-scroll-container -->
+
+  </div><!-- End #app-viewport-wrapper -->
+
+
+  <!-- ========================================================================= -->
+  <!-- MODAL 1: 📷 KAMERA LIVE WEBRTC SCANNER                                    -->
+  <!-- ========================================================================= -->
+  <div id="modal-camera" class="fixed inset-0 z-50 modal-backdrop hidden items-center justify-center p-3">
+    <div class="bg-slate-900 text-white rounded-3xl max-w-md w-full overflow-hidden shadow-2xl border-2 border-slate-700 animate-fadeIn">
+      
+      <!-- Camera Modal Header -->
+      <div class="px-4 py-3 bg-slate-950 border-b border-slate-800 flex items-center justify-between">
+        <div class="flex items-center gap-2">
+          <span class="text-emerald-400 text-base">📷</span>
+          <h3 class="font-black text-xs sm:text-sm">Kamera Pengawas K3 Lapangan</h3>
+        </div>
+        <button onclick="closeCameraModal()" class="text-slate-400 hover:text-white text-base font-bold">✕</button>
+      </div>
+
+      <!-- Viewport & Guide -->
+      <div class="p-3.5 space-y-3">
+        <div class="camera-viewport relative bg-black rounded-2xl overflow-hidden">
+          <video id="camera-stream" autoplay playsinline class="w-full h-full object-cover"></video>
+          <canvas id="camera-canvas" class="hidden w-full h-full object-cover"></canvas>
+          
+          <!-- Scanner Guidelines -->
+          <div id="camera-guide" class="camera-guide-overlay">
+            <div class="text-[10px] bg-black/80 px-2.5 py-1 rounded-lg text-emerald-300 font-bold">Posisikan Objek Bahaya di Dalam Kotak</div>
+            <div class="scanner-laser"></div>
+            <div class="text-[9px] text-slate-300 bg-black/80 px-2 py-0.5 rounded">PalmSOS Live Viewfinder</div>
+          </div>
+        </div>
+
+        <!-- Camera Status Message -->
+        <p id="camera-status-text" class="text-center text-xs text-slate-300 font-medium">
+          Arahkan kamera ke titik bahaya di kebun sawit atau stasiun PKS.
+        </p>
+
+        <!-- Camera Controls -->
+        <div class="flex items-center justify-center gap-4 pt-1">
+          <!-- Live Stream Controls -->
+          <div id="camera-controls-live" class="flex items-center gap-4">
+            <button type="button" onclick="switchCameraFacing()" title="Ganti Kamera Depan/Belakang" class="p-3 bg-slate-800 hover:bg-slate-700 rounded-full border border-slate-700 text-slate-200 transition-colors text-sm">
+              🔄
+            </button>
+            
+            <!-- Big Circular Shutter Button -->
+            <button type="button" onclick="captureCameraSnapshot()" class="btn-shutter" title="Jepret Foto">
+              <div class="btn-shutter-inner"></div>
+            </button>
+
+            <button type="button" onclick="triggerNativeCamera()" title="Beralih ke Kamera Asli HP" class="p-3 bg-slate-800 hover:bg-slate-700 rounded-full border border-slate-700 text-slate-200 transition-colors text-sm">
+              📱
+            </button>
+          </div>
+
+          <!-- Snapshot Preview Controls -->
+          <div id="camera-controls-preview" class="hidden flex items-center gap-2">
+            <button type="button" onclick="retakeCameraSnapshot()" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-xl text-xs font-bold border border-slate-700">
+              🔄 Foto Ulang
+            </button>
+            <button type="button" onclick="confirmCameraSnapshot()" class="px-5 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-black shadow-md flex items-center gap-1.5">
+              <span>✓</span> Gunakan Foto
+            </button>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+
+
+  <!-- ========================================================================= -->
+  <!-- MODAL 2: ⚡ CONTOH KASUS BAHAYA SAWIT (DEMO DOSEN)                        -->
+  <!-- ========================================================================= -->
+  <div id="modal-presets" class="fixed inset-0 z-50 modal-backdrop hidden items-center justify-center p-3">
+    <div class="bg-white rounded-3xl max-w-lg w-full max-h-[85vh] flex flex-col shadow-2xl border-2 border-slate-300 animate-fadeIn">
+      
+      <div class="px-4 py-3.5 bg-amber-500 text-slate-950 rounded-t-3xl flex items-center justify-between border-b-2 border-amber-600">
+        <div class="flex items-center gap-2">
+          <span class="text-xl">⚡</span>
+          <div>
+            <h3 class="font-black text-sm">Pilih Contoh Kasus Bahaya Sawit</h3>
+            <p class="text-[11px] text-slate-950 font-semibold">Klik 1x untuk mengisi foto & data secara otomatis (Demo Tugas)</p>
+          </div>
+        </div>
+        <button onclick="closeModal('modal-presets')" class="text-slate-950 font-black text-lg">✕</button>
+      </div>
+
+      <div class="p-4 overflow-y-auto space-y-2.5 flex-grow" id="preset-list-container">
+        <!-- Rendered in app.js from data.js -->
+      </div>
+
+      <div class="p-3 bg-slate-100 border-t-2 border-slate-200 text-right rounded-b-3xl">
+        <button onclick="closeModal('modal-presets')" class="px-4 py-1.5 bg-slate-300 hover:bg-slate-400 text-slate-900 text-xs font-bold rounded-xl transition-colors">
+          Tutup
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+
+  <!-- ========================================================================= -->
+  <!-- MODAL 3: 🔍 DETAIL & VERIFIKASI LAPORAN K3 (WORKFLOW HSE)                 -->
+  <!-- ========================================================================= -->
+  <div id="modal-report-detail" class="fixed inset-0 z-50 modal-backdrop hidden items-center justify-center p-3">
+    <div class="bg-white rounded-3xl max-w-2xl w-full max-h-[90vh] flex flex-col shadow-2xl border-2 border-slate-300 animate-fadeIn">
+      
+      <div class="px-4 py-3.5 bg-slate-900 text-white rounded-t-3xl flex items-center justify-between border-b-2 border-slate-800">
+        <div class="flex items-center gap-2">
+          <span class="p-1.5 bg-emerald-600 rounded-lg text-xs">📋</span>
+          <div>
+            <div class="flex items-center gap-2">
+              <h3 class="font-black text-sm" id="detail-report-id">Laporan #PS-2026-001</h3>
+              <span id="detail-status-badge" class="px-2 py-0.5 text-[10px] font-black rounded-full bg-amber-500 text-white">Menunggu</span>
+            </div>
+            <p class="text-[10px] text-slate-300 font-mono" id="detail-created-at">-</p>
+          </div>
+        </div>
+        <button onclick="closeModal('modal-report-detail')" class="text-slate-400 hover:text-white text-lg font-bold">✕</button>
+      </div>
+
+      <div class="p-4 overflow-y-auto space-y-4 flex-grow text-xs">
+        
+        <!-- Foto & Info -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+          <div class="space-y-1">
+            <label class="font-black text-slate-900 block text-xs">Foto Bukti Lapangan:</label>
+            <div class="aspect-[4/3] rounded-2xl overflow-hidden bg-slate-900 border-2 border-slate-300">
+              <img id="detail-photo-img" src="" alt="Bukti Bahaya" class="w-full h-full object-cover" />
+            </div>
+          </div>
+
+          <div class="space-y-2 bg-slate-50 p-3.5 rounded-2xl border-2 border-slate-200">
+            <div>
+              <div class="text-[10px] text-slate-500 font-bold uppercase">Pelapor</div>
+              <div class="font-black text-slate-900 text-sm" id="detail-reporter-name">-</div>
+              <div class="text-xs text-emerald-800 font-bold" id="detail-reporter-role">-</div>
+            </div>
+            <div>
+              <div class="text-[10px] text-slate-500 font-bold uppercase">Kategori Temuan</div>
+              <div class="font-extrabold text-slate-900" id="detail-category">-</div>
+            </div>
+            <div>
+              <div class="text-[10px] text-slate-500 font-bold uppercase">Lokasi Blok & GPS</div>
+              <div class="font-bold text-slate-900" id="detail-location">-</div>
+              <div class="text-[10px] text-emerald-900 font-mono font-bold" id="detail-gps">-</div>
+            </div>
+            <div>
+              <div class="text-[10px] text-slate-500 font-bold uppercase">Tingkat Risiko</div>
+              <div id="detail-risk-badge" class="inline-block mt-0.5 px-2.5 py-0.5 rounded-lg text-xs font-black">-</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Deskripsi -->
+        <div class="space-y-1">
+          <label class="font-black text-slate-900 text-xs">Keterangan & Rincian Bahaya:</label>
+          <div class="p-3 bg-slate-100 rounded-2xl text-slate-900 text-xs font-semibold leading-relaxed border-2 border-slate-200" id="detail-description">
+            -
+          </div>
+        </div>
+
+        <!-- WORKFLOW PENANGANAN K3 -->
+        <div class="p-4 bg-emerald-50 rounded-2xl border-2 border-emerald-300 space-y-3">
+          <div class="flex items-center justify-between border-b-2 border-emerald-200 pb-2">
+            <h4 class="font-black text-emerald-950 text-xs flex items-center gap-1.5">
+              <span>🛠️</span> Tindakan Perbaikan Petugas K3
+            </h4>
+            <span class="text-[10px] bg-emerald-200 text-emerald-950 px-2 py-0.5 rounded-lg font-black border border-emerald-400">Kewenangan HSE</span>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+            <div>
+              <label for="detail-input-status" class="block text-xs font-black text-slate-900 mb-1">Ubah Status:</label>
+              <select id="detail-input-status" class="w-full text-xs p-2.5 bg-white border-2 border-slate-300 rounded-xl font-bold">
+                <option value="Menunggu Verifikasi">🟠 Menunggu Verifikasi</option>
+                <option value="Sedang Ditindaklanjuti">🔵 Sedang Ditindaklanjuti</option>
+                <option value="Selesai">🟢 Selesai</option>
+              </select>
+            </div>
+
+            <div>
+              <label for="detail-input-officer" class="block text-xs font-black text-slate-900 mb-1">Petugas HSE Penanggung Jawab:</label>
+              <input type="text" id="detail-input-officer" placeholder="Nama Petugas HSE" class="w-full text-xs p-2.5 bg-white border-2 border-slate-300 rounded-xl font-bold" />
+            </div>
+          </div>
+
+          <div>
+            <label for="detail-input-action" class="block text-xs font-black text-slate-900 mb-1">Catatan Tindakan Perbaikan (Corrective Action):</label>
+            <textarea id="detail-input-action" rows="2" placeholder="Tuliskan tindakan perbaikan yang telah dilakukan di lapangan..." class="w-full text-xs p-2.5 bg-white border-2 border-slate-300 rounded-xl font-bold"></textarea>
+          </div>
+
+          <div class="text-right">
+            <button type="button" onclick="saveReportUpdate()" class="px-4 py-2 bg-emerald-800 hover:bg-emerald-900 text-white font-black text-xs rounded-xl shadow transition-colors">
+              💾 Simpan Perubahan Status
+            </button>
+          </div>
+        </div>
+
+        <!-- TIMELINE LOG -->
+        <div class="space-y-1.5">
+          <label class="font-black text-slate-900 text-xs">Jejak Riwayat Penanganan (Timeline Audit):</label>
+          <div id="detail-timeline-container" class="space-y-1.5">
+            <!-- Rendered in app.js -->
+          </div>
+        </div>
+
+      </div>
+
+      <div class="p-3 bg-slate-100 border-t-2 border-slate-200 flex items-center justify-between rounded-b-3xl">
+        <button type="button" onclick="printSingleReport()" class="px-3 py-1.5 bg-slate-200 hover:bg-slate-300 text-slate-800 text-xs font-bold rounded-xl flex items-center gap-1.5 border border-slate-300">
+          <span>🖨️</span> Cetak Berita Acara
+        </button>
+        <button type="button" onclick="closeModal('modal-report-detail')" class="px-4 py-1.5 bg-slate-900 hover:bg-black text-white text-xs font-black rounded-xl">
+          Tutup
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+
+  <!-- ========================================================================= -->
+  <!-- MODAL 4: 🚀 PANDUAN PUBLISH ONLINE (SIAP DI-PUBLISH)                       -->
+  <!-- ========================================================================= -->
+  <div id="modal-publish" class="fixed inset-0 z-50 modal-backdrop hidden items-center justify-center p-3">
+    <div class="bg-white rounded-3xl max-w-lg w-full max-h-[90vh] flex flex-col shadow-2xl border-2 border-slate-300 animate-fadeIn">
+      
+      <div class="px-4 py-3.5 bg-slate-900 text-white rounded-t-3xl flex items-center justify-between border-b-2 border-slate-800">
+        <div class="flex items-center gap-2">
+          <span class="text-xl">🚀</span>
+          <div>
+            <h3 class="font-black text-sm">Panduan Publikasi Online Gratis</h3>
+            <p class="text-[10px] text-emerald-300 font-semibold">Siap di-publish agar dosen & teman dapat membuka di HP masing-masing</p>
+          </div>
+        </div>
+        <button onclick="closeModal('modal-publish')" class="text-slate-400 hover:text-white text-lg font-bold">✕</button>
+      </div>
+
+      <div class="p-4 overflow-y-auto space-y-4 flex-grow text-xs text-slate-800 leading-relaxed">
+        
+        <!-- Live QR Code Generator -->
+        <div class="bg-emerald-50 border-2 border-emerald-300 p-4 rounded-2xl text-center space-y-2.5">
+          <div class="font-black text-emerald-950 text-xs">📱 Scan QR Code untuk Buka di Smartphone</div>
+          <div class="w-40 h-40 mx-auto bg-white p-2 rounded-xl border-2 border-emerald-400 shadow-md flex items-center justify-center">
+            <img id="publish-qrcode-img" src="" alt="QR Code PalmSOS" class="w-full h-full object-contain" />
+          </div>
+          <div class="text-[11px] font-mono font-bold text-slate-700 break-all bg-white p-2 rounded-lg border border-slate-200" id="publish-current-url">-</div>
+          <button onclick="copyCurrentURL()" class="px-4 py-1.5 bg-emerald-800 hover:bg-emerald-900 text-white text-xs font-black rounded-xl transition-colors shadow">
+            📋 Salin Link Website
+          </button>
+        </div>
+
+        <!-- 3 Free Hosting Options -->
+        <div class="space-y-2">
+          <h4 class="font-black text-slate-900 text-xs">Pilihan Hosting Gratis 100%:</h4>
+          
+          <!-- Netlify Drop -->
+          <div class="p-3.5 bg-slate-50 border-2 border-slate-200 rounded-2xl space-y-1">
+            <div class="font-black text-slate-900 flex items-center gap-1.5 text-xs">
+              <span>⚡</span> 1. Netlify Drop (Paling Cepat - 30 Detik)
+            </div>
+            <p class="text-[11px] text-slate-700 font-medium">Buka <strong>app.netlify.com/drop</strong>, lalu seret (*drag-and-drop*) seluruh folder proyek ini. Website Anda langsung online dan mendapatkan link HTTPS gratis!</p>
+          </div>
+
+          <!-- Vercel -->
+          <div class="p-3.5 bg-slate-50 border-2 border-slate-200 rounded-2xl space-y-1">
+            <div class="font-black text-slate-900 flex items-center gap-1.5 text-xs">
+              <span>▲</span> 2. Vercel
+            </div>
+            <p class="text-[11px] text-slate-700 font-medium">Unggah ke akun GitHub Anda, buka <strong>vercel.com</strong>, pilih repository proyek ini, lalu klik Deploy. Otomatis terpasang SSL/HTTPS dan PWA aktif.</p>
+          </div>
+
+          <!-- GitHub Pages -->
+          <div class="p-3.5 bg-slate-50 border-2 border-slate-200 rounded-2xl space-y-1">
+            <div class="font-black text-slate-900 flex items-center gap-1.5 text-xs">
+              <span>🐙</span> 3. GitHub Pages
+            </div>
+            <p class="text-[11px] text-slate-700 font-medium">Push folder ke repository GitHub $\rightarrow$ buka Settings $\rightarrow$ Pages $\rightarrow$ pilih branch `main` $\rightarrow$ Save. Link langsung aktif!</p>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="p-3 bg-slate-100 border-t-2 border-slate-200 text-right rounded-b-3xl">
+        <button onclick="closeModal('modal-publish')" class="px-4 py-1.5 bg-slate-900 hover:bg-black text-white text-xs font-black rounded-xl">
+          Tutup
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+
+  <!-- ========================================================================= -->
+  <!-- MODAL 5: 📲 CARA INSTALL PWA DI HP                                        -->
+  <!-- ========================================================================= -->
+  <div id="modal-install" class="fixed inset-0 z-50 modal-backdrop hidden items-center justify-center p-3">
+    <div class="bg-white rounded-3xl max-w-md w-full shadow-2xl border-2 border-slate-300 animate-fadeIn">
+      
+      <div class="px-4 py-3.5 bg-emerald-950 text-white rounded-t-3xl flex items-center justify-between border-b-2 border-emerald-800">
+        <h3 class="font-black text-sm flex items-center gap-2">
+          <span>📲</span> Pasang PalmSOS di Layar HP
+        </h3>
+        <button onclick="closeModal('modal-install')" class="text-white font-bold">✕</button>
+      </div>
+
+      <div class="p-4 space-y-3 text-xs text-slate-800 font-medium">
+        <div class="p-3 bg-emerald-50 border-2 border-emerald-300 rounded-2xl space-y-1">
+          <div class="font-black text-emerald-950">🤖 Untuk Pengguna Android (Chrome):</div>
+          <p class="text-[11px] text-slate-700">1. Ketuk ikon titik tiga (⋮) di pojok kanan atas Chrome.<br>2. Pilih <strong>"Tambahkan ke Layar Utama"</strong> atau <strong>"Install Aplikasi"</strong>.</p>
+        </div>
+
+        <div class="p-3 bg-blue-50 border-2 border-blue-300 rounded-2xl space-y-1">
+          <div class="font-black text-blue-950">🍏 Untuk Pengguna iPhone / iPad (Safari):</div>
+          <p class="text-[11px] text-slate-700">1. Ketuk tombol Bagikan (*Share* ⎙ / panah bawah).<br>2. Geser ke bawah lalu ketuk <strong>"Tambah ke Layar Utama" (*Add to Home Screen*)</strong>.</p>
+        </div>
+      </div>
+
+      <div class="p-3 bg-slate-100 text-right rounded-b-3xl border-t-2 border-slate-200">
+        <button onclick="closeModal('modal-install')" class="px-4 py-1.5 bg-emerald-800 text-white text-xs font-black rounded-xl">
+          Siap
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+
+  <!-- ========================================================================= -->
+  <!-- MODAL 6: 📘 SOP & TEORI K3 SAWIT                                          -->
+  <!-- ========================================================================= -->
+  <div id="modal-sop" class="fixed inset-0 z-50 modal-backdrop hidden items-center justify-center p-3">
+    <div class="bg-white rounded-3xl max-w-xl w-full max-h-[88vh] flex flex-col shadow-2xl border-2 border-slate-300 animate-fadeIn">
+      
+      <div class="px-4 py-3.5 brand-gradient text-white rounded-t-3xl flex items-center justify-between border-b-2 border-emerald-950">
+        <div class="flex items-center gap-2">
+          <span class="text-xl">🌴</span>
+          <div>
+            <h3 class="font-black text-sm">Modul Edukasi K3 Kelapa Sawit</h3>
+            <p class="text-[10px] text-emerald-200 font-semibold">Landasan Teori & Referensi Akademis Tugas Kuliah</p>
+          </div>
+        </div>
+        <button onclick="closeModal('modal-sop')" class="text-white text-lg font-bold">✕</button>
+      </div>
+
+      <div class="p-4 overflow-y-auto space-y-4 flex-grow text-xs text-slate-800 leading-relaxed font-medium">
+        
+        <!-- Heinrich Triangle -->
+        <div class="p-3.5 bg-amber-50 rounded-2xl border-2 border-amber-300 space-y-1.5">
+          <h4 class="font-black text-amber-950 text-xs flex items-center gap-1.5">
+            <span>⚠️</span> Teori Segitiga Heinrich (Heinrich's Triangle)
+          </h4>
+          <p class="text-[11px] text-amber-950">
+            Setiap <strong>1 kecelakaan fatal</strong> didahului oleh <strong>29 kecelakaan ringan</strong> dan <strong>300 kondisi hampir celaka (*Near Miss*)</strong>.
+          </p>
+          <div class="p-2 bg-white rounded-xl border-2 border-amber-400 text-center font-mono font-black text-amber-900 text-xs">
+            🔺 1 Fatalitas ⬅️ 29 Cedera Ringan ⬅️ 300 Near Miss / Bahaya
+          </div>
+        </div>
+
+        <!-- 3 Stage Flow -->
+        <div class="space-y-1.5">
+          <h4 class="font-black text-emerald-950 text-xs">Alur Pengelolaan Digital 3 Tahap:</h4>
+          <div class="grid grid-cols-3 gap-2 text-xs text-center font-black">
+            <div class="p-2.5 bg-amber-50 rounded-xl border-2 border-amber-300 text-amber-950">1. Menunggu</div>
+            <div class="p-2.5 bg-blue-50 rounded-xl border-2 border-blue-300 text-blue-950">2. Ditindaklanjuti</div>
+            <div class="p-2.5 bg-emerald-50 rounded-xl border-2 border-emerald-300 text-emerald-950">3. Selesai</div>
+          </div>
+        </div>
+
+        <!-- Legal Reference -->
+        <div class="border-t-2 border-slate-200 pt-2 space-y-1">
+          <h4 class="font-black text-slate-900 text-xs">Dasar Regulasi:</h4>
+          <p class="text-[11px] text-slate-700 font-semibold">• UU No. 1 Th 1970 tentang Keselamatan Kerja<br">• PP No. 50 Th 2012 Penerapan Sistem Manajemen K3 (SMK3)<br">• Standar Keberlanjutan K3 ISPO & RSPO Kelapa Sawit</p>
+        </div>
+
+      </div>
+
+      <div class="p-3 bg-slate-100 border-t-2 border-slate-200 text-right rounded-b-3xl">
+        <button onclick="closeModal('modal-sop')" class="px-4 py-1.5 bg-emerald-800 text-white text-xs font-black rounded-xl">
+          Tutup
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+
+  <!-- ========================================================================= -->
+  <!-- MODAL 7: 👤 GANTI AKUN SIMULASI KARYAWAN                                  -->
+  <!-- ========================================================================= -->
+  <div id="modal-user" class="fixed inset-0 z-50 modal-backdrop hidden items-center justify-center p-3">
+    <div class="bg-white rounded-3xl max-w-sm w-full shadow-2xl border-2 border-slate-300 animate-fadeIn">
+      <div class="px-4 py-3.5 bg-emerald-950 text-white rounded-t-3xl flex items-center justify-between border-b-2 border-emerald-800">
+        <h3 class="font-black text-xs sm:text-sm flex items-center gap-1.5">
+          <span>👤</span> Ganti Profil Karyawan
+        </h3>
+        <button onclick="closeModal('modal-user')" class="text-white text-lg font-bold">✕</button>
+      </div>
+      <div class="p-3.5 space-y-2" id="simulation-users-list">
+        <!-- Rendered in app.js -->
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ========================================================================= -->
+  <!-- MODAL 8: 🚨 SOS DARURAT 24 JAM                                            -->
+  <!-- ========================================================================= -->
+  <div id="modal-sos" class="fixed inset-0 z-50 modal-backdrop hidden items-center justify-center p-3">
+    <div class="bg-white rounded-3xl max-w-sm w-full shadow-2xl border-2 border-red-300 animate-fadeIn">
+      <div class="px-4 py-3.5 bg-red-600 text-white rounded-t-3xl flex items-center justify-between border-b-2 border-red-700">
+        <div class="flex items-center gap-2">
+          <span class="text-xl">🚨</span>
+          <div>
+            <h3 class="font-black text-sm">Kontak Darurat Perkebunan</h3>
+            <p class="text-[10px] text-red-100 font-semibold">Siaga ERT & Medis 24 Jam Nonstop</p>
+          </div>
+        </div>
+        <button onclick="closeModal('modal-sos')" class="text-white text-lg font-bold">✕</button>
+      </div>
+      <div class="p-3.5 space-y-2" id="emergency-contacts-list">
+        <!-- Rendered in app.js -->
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ========================================================================= -->
+  <!-- MODAL 9: 🎉 TANDA TERIMA LAPORAN K3 BERHASIL DIKIRIM (SUCCESS RECEIPT)    -->
+  <!-- ========================================================================= -->
+  <div id="modal-report-success" class="fixed inset-0 z-50 modal-backdrop hidden items-center justify-center p-3">
+    <div class="bg-white rounded-3xl max-w-md w-full shadow-2xl border-2 border-emerald-500 overflow-hidden animate-fadeIn">
+      
+      <!-- Success Header Banner -->
+      <div class="brand-gradient text-white p-5 text-center relative overflow-hidden">
+        <div class="w-16 h-16 mx-auto rounded-full bg-white/20 backdrop-blur-md border-2 border-white/40 flex items-center justify-center text-3xl shadow-lg ring-4 ring-emerald-400/40">
+          ✓
+        </div>
+        <h3 class="text-lg font-black mt-2">Laporan K3 Berhasil Dikirim!</h3>
+        <p class="text-xs text-emerald-100 font-medium">Data telah tersimpan di sistem HSE PT Sawit Makmur Lestari</p>
+        <div class="mt-2 inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-400/20 border border-amber-300 text-amber-300 text-xs font-black">
+          <span class="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span>
+          <span>Status: Menunggu Verifikasi Petugas K3</span>
+        </div>
+      </div>
+
+      <!-- Receipt Body Content -->
+      <div class="p-5 space-y-3.5 bg-slate-50 text-xs">
+        
+        <!-- Ticket Information Box -->
+        <div class="bg-white p-3.5 rounded-2xl border-2 border-slate-200 shadow-sm space-y-2">
+          <div class="flex items-center justify-between border-b border-slate-200 pb-2">
+            <span class="text-slate-500 font-bold uppercase text-[10px]">Nomor Tiket Laporan</span>
+            <span class="font-mono font-black text-sm text-emerald-950" id="success-report-id">#PS-2026-000</span>
+          </div>
+
+          <div class="flex items-center justify-between text-xs">
+            <span class="text-slate-600 font-medium">Kategori Bahaya:</span>
+            <span class="font-extrabold text-slate-900" id="success-category">-</span>
+          </div>
+
+          <div class="flex items-center justify-between text-xs">
+            <span class="text-slate-600 font-medium">Lokasi Temuan:</span>
+            <span class="font-bold text-slate-900 text-right" id="success-location">-</span>
+          </div>
+
+          <div class="flex items-center justify-between text-xs">
+            <span class="text-slate-600 font-medium">Tingkat Risiko:</span>
+            <span class="font-black px-2 py-0.5 rounded text-[11px]" id="success-risk">-</span>
+          </div>
+
+          <div class="flex items-center justify-between text-xs">
+            <span class="text-slate-600 font-medium">Waktu Kirim:</span>
+            <span class="font-mono text-slate-700 font-bold" id="success-time">-</span>
+          </div>
+        </div>
+
+        <!-- Next Action Guidance -->
+        <div class="instruction-box-blue p-3 rounded-xl text-xs space-y-1">
+          <div class="font-black flex items-center gap-1.5 text-blue-950">
+            <span>👷</span> Alur Selanjutnya:
+          </div>
+          <p class="text-[11px] leading-relaxed text-blue-900 font-medium">
+            Laporan Anda sudah masuk ke antrean K3. Anda dapat memantau status perbaikan di <strong>Riwayat Laporan</strong>, atau beralih ke <strong>Halaman Petugas K3</strong> untuk mensimulasikan proses verifikasi dan tindakan perbaikan.
+          </p>
+        </div>
+
+        <!-- Action Navigation Buttons -->
+        <div class="space-y-2 pt-1">
+          <button type="button" onclick="closeModal('modal-report-success'); navDockTo('history');" class="w-full py-3 px-4 bg-emerald-800 hover:bg-emerald-900 text-white font-black rounded-xl text-xs sm:text-sm flex items-center justify-center gap-2 shadow-md transition-all active:scale-95">
+            <span>📋</span>
+            <span>Lihat di Riwayat Laporan Saya</span>
+          </button>
+
+          <button type="button" onclick="closeModal('modal-report-success'); switchView('officer');" class="w-full py-3 px-4 bg-slate-900 hover:bg-black text-amber-300 font-black rounded-xl text-xs sm:text-sm flex items-center justify-center gap-2 border-2 border-amber-400 shadow-md transition-all active:scale-95">
+            <span>👨‍💼</span>
+            <span>Buka Dashboard Petugas K3 (Verifikasi Laporan)</span>
+          </button>
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+
+
+  <!-- ========================================================================= -->
+  <!-- PRINT AREA (PRINT STYLESHEET)                                             -->
+  <!-- ========================================================================= -->
+  <div id="print-area" class="hidden">
+    <div class="print-header flex items-center justify-between border-b-2 border-emerald-900 pb-3 mb-4">
+      <div>
+        <h1 class="text-lg font-black text-emerald-950">PT SAWIT MAKMUR LESTARI</h1>
+        <p class="text-xs text-slate-600 font-bold">DIVISI K3 (HSE DEPARTMENT)</p>
+      </div>
+      <div class="text-right text-[11px]">
+        <div class="font-bold">BERITA ACARA K3</div>
+        <div class="text-[10px] text-slate-500" id="print-timestamp">-</div>
+      </div>
+    </div>
+    <div id="print-content" class="space-y-3 text-xs">
+      <!-- Rendered on demand when print button clicked -->
+    </div>
+  </div>
+
+
+  <!-- ========================================================================= -->
+  <!-- FLOATING TOAST CONTAINER                                                  -->
+  <!-- ========================================================================= -->
+  <div id="toast-container"></div>
+
+
+  <!-- Scripts -->
+  <script src="data.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
